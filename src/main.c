@@ -20,9 +20,11 @@ uint8_t* file_open(const char* filename, FILE** file, uint64_t* sz) {
     int32_t len = ftell(*file);
     fseek(*file, 0, SEEK_SET);
 
-    uint8_t* buff = malloc(len + 1);
+    uint8_t* buff = malloc(len + 16);
     fread(buff, len, 1, *file);
-    buff[len] = 0;
+    for (size_t i = 0; i < 16; ++i) {
+        buff[len + i] = 0;
+    }
 
     *sz = len;
 
@@ -39,20 +41,26 @@ void test_string(uint8_t* buff) {
     uint32_t code;
     uint32_t err;
     uint8_t* curr = buff;
+    uint32_t code1;
+    uint32_t err1;
+    uint8_t* curr1 = buff;
     uint32_t errs = 0;
+    volatile int32_t x;
 
     while (curr[0]) {
         curr = utf8_decode_dfa(curr, &code, &err);
         errs += err;
+
     }
+    /* uint32_t v = utf8_validate_dfa(curr); */
 
     if (errs > 0) {
-        printf("encountered errors\n");
+        x = errs;
     }
 
 }
 
-#define N 100
+#define N 1
 
 int main(int argc, char** argv) {
     LARGE_INTEGER li;
