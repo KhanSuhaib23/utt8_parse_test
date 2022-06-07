@@ -17,7 +17,7 @@
 // states are pre multiplied with width
 // so instead of doing state = table[state*width+ch]
 // we can do state = table[state + ch]
-static const uint8_t utf8d[] = {
+static const uint8_t char_class[] = {
 // CHARACTER CLASSES
 //         0   1   2   3   4   5   6   7   8   9   a   b   c   d   e   f
 /* 0 */  0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,
@@ -36,51 +36,41 @@ static const uint8_t utf8d[] = {
 /* d */  0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,0x2,
 /* e */  0xa,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x3,0x4,0x3,0x3,
 /* f */  0xb,0x6,0x6,0x6,0x5,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,0x8,
-
-/* // DFA */
-/* //          0    1    2    3    4    5    6    7    8    9    a    b    c    d    e    f */
-/* /\* s0 *\/ 0x00,0x10,0x20,0x30,0x50,0x80,0x70,0x10,0x10,0x10,0x40,0x60,0x10,0x10,0x10,0x10, */
-/* /\* s1 *\/ 0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s2 *\/ 0x10,0x00,0x10,0x10,0x10,0x10,0x10,0x00,0x10,0x00,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s3 *\/ 0x10,0x20,0x10,0x10,0x10,0x10,0x10,0x20,0x10,0x20,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s4 *\/ 0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x20,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s5 *\/ 0x10,0x20,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x20,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s6 *\/ 0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x30,0x10,0x30,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s7 *\/ 0x10,0x30,0x10,0x10,0x10,0x10,0x10,0x30,0x10,0x30,0x10,0x10,0x10,0x10,0x10,0x10, */
-/* /\* s8 *\/ 0x10,0x30,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10,0x10, */
 };
 
-static const uint64_t utf8v[] = {
-    encode_state(0ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,0ull,2ull,1ull,2ull,1ull,3ull,3ull),
-    encode_state(2ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(3ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(5ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(8ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(7ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,0ull,2ull,2ull,1ull,3ull,3ull,1ull),
-    encode_state(1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,0ull,2ull,1ull,2ull,3ull,3ull,1ull),
-    encode_state(4ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(6ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull),
-    encode_state(1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull,1ull)
+static const uint64_t dfa[] = {
+// DFA
+//                      s0    s1    s2    s3    s4    s5    s6    s7    s8
+/* 0 */    encode_state(0ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 1 */    encode_state(1ull, 1ull, 0ull, 2ull, 1ull, 2ull, 1ull, 3ull, 3ull),
+/* 2 */    encode_state(2ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 3 */    encode_state(3ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 4 */    encode_state(5ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 5 */    encode_state(8ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 6 */    encode_state(7ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 7 */    encode_state(1ull, 1ull, 0ull, 2ull, 2ull, 1ull, 3ull, 3ull, 1ull),
+/* 8 */    encode_state(1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* 9 */    encode_state(1ull, 1ull, 0ull, 2ull, 1ull, 2ull, 3ull, 3ull, 1ull),
+/* a */    encode_state(4ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* b */    encode_state(6ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* c */    encode_state(1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* d */    encode_state(1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* e */    encode_state(1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull),
+/* f */    encode_state(1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull, 1ull)
 };
 
 void* utf8_decode_dfa(void* buff, uint32_t* c, uint32_t* e) {
     uint8_t* b = buff;
-    uint32_t type = utf8d[b[0]];
+    uint32_t type = char_class[b[0]];
     uint32_t state = 0;
 
-    state = (utf8v[type] >> state) & 0x3f;
+    state = (dfa[type] >> state) & 0x3f;
     *c = (0xff >> type) & b[0];
     ++b;
 
     while (state > UTF8_TERMINAL_START) {
-        type = utf8d[b[0]];
-        state = (utf8v[type] >> state) & 0x3f;
+        type = char_class[b[0]];
+        state = (dfa[type] >> state) & 0x3f;
         *c = (*c << 6) | (b[0] & 0x3f);
         ++b;
     }
@@ -94,16 +84,23 @@ uint32_t utf8_validate_dfa(void* buff) {
     uint8_t* b = buff;
     uint32_t state = 0;
     uint64_t row1, row2, row3, row4, row5, row6, row7, row8;
+    uint64_t wide;
 
     for (; b[0] && state != 1*6; b += 8) {
-        row1 = utf8v[utf8d[b[0]]];
-        row2 = utf8v[utf8d[b[1]]];
-        row3 = utf8v[utf8d[b[2]]];
-        row4 = utf8v[utf8d[b[3]]];
-        row5 = utf8v[utf8d[b[4]]];
-        row6 = utf8v[utf8d[b[5]]];
-        row7 = utf8v[utf8d[b[6]]];
-        row8 = utf8v[utf8d[b[7]]];
+
+        for (; b[0] && ((*(uint64_t*) b) & 0x8080808080808080) == 0; b += 8) {
+        }
+        /* wide = * (uint64_t*) b; */
+
+        /* b += (wide & 0x8080808080808080) == 0 ? 8 : 0; */
+        row1 = dfa[char_class[b[0]]];
+        row2 = dfa[char_class[b[1]]];
+        row3 = dfa[char_class[b[2]]];
+        row4 = dfa[char_class[b[3]]];
+        row5 = dfa[char_class[b[4]]];
+        row6 = dfa[char_class[b[5]]];
+        row7 = dfa[char_class[b[6]]];
+        row8 = dfa[char_class[b[7]]];
 
         state = row1 >> (state & 0x3f);
         state = row2 >> (state & 0x3f);

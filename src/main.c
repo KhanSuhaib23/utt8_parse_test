@@ -50,9 +50,8 @@ void test_string(uint8_t* buff) {
     while (curr[0]) {
         curr = utf8_decode_dfa(curr, &code, &err);
         errs += err;
-
     }
-    /* uint32_t v = utf8_validate_dfa(curr); */
+    /* errs = utf8_validate_dfa(curr); */
 
     if (errs > 0) {
         x = errs;
